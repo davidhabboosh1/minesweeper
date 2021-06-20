@@ -39,93 +39,80 @@ void placeBombs(int width, int height, int bombs, struct node *realBoard) {
 }
 
 void connectNodes(int width, int height, struct node *realBoard, struct node *playingBoard) {
-	bool topNull;
-	bool leftNull;
-	bool rightNull;
-	bool bottomNull;
+	bool top;
+	bool left;
+	bool right;
+	bool bottom;
 
 	for (int i = 0; i < width * height; i ++) {
-		topNull = false;
-		leftNull = false;
-		bottomNull = false;
-		rightNull = false;
+		realBoard[i].top = NULL;
+		playingBoard[i].top = NULL;
+		realBoard[i].left = NULL;
+		playingBoard[i].left = NULL;
+		realBoard[i].right = NULL;
+		playingBoard[i].right = NULL;
+		realBoard[i].bottom = NULL;
+		playingBoard[i].bottom = NULL;
+		realBoard[i].topLeft = NULL;
+		playingBoard[i].topLeft = NULL;
+		realBoard[i].topRight = NULL;
+		playingBoard[i].topRight = NULL;
+		realBoard[i].bottomLeft = NULL;
+		playingBoard[i].bottomLeft = NULL;
+		realBoard[i].bottomRight = NULL;
+		playingBoard[i].bottomRight = NULL;
+	}
+
+	for (int i = 0; i < width * height; i ++) {
+		top = true;
+		left = true;
+		bottom = true;
+		right = true;
 		
 		if (i < width) {
-			topNull = true;
+			top = false;
 		}
 		if (i % width == 0) {
-			leftNull = true;
+			left = false;
 		}
 		if (i >= width * height - width) {
-			bottomNull = true;
+			bottom = false;
 		}
 		if (i % width == width - 1) {
-			rightNull = true;
+			right = false;
 		}
 
-		if (!topNull) {
+		if (top) {
 			realBoard[i].top = &(realBoard[i - width]);
 			playingBoard[i].top = &(playingBoard[i - width]);
 		}
-		else {
-			realBoard[i].top = NULL;
-			playingBoard[i].top = NULL;
-		}
-		if (!leftNull) {
+		if (left) {
 			realBoard[i].left = &(realBoard[i - 1]);
 			playingBoard[i].left = &(playingBoard[i - 1]);
 		}
-		else {
-			realBoard[i].left = NULL;
-			playingBoard[i].left = NULL;
-		}
-		if (!rightNull) {
+		if (right) {
 			realBoard[i].right = &(realBoard[i + 1]);
 			playingBoard[i].right = &(playingBoard[i + 1]);
 		}
-		else {
-			realBoard[i].right = NULL;
-			playingBoard[i].right = NULL;
-		}
-		if (!bottomNull) {
+		if (bottom) {
 			realBoard[i].bottom = &(realBoard[i + width]);
 			playingBoard[i].bottom = &(playingBoard[i + width]);
 		}
-		else {
-			realBoard[i].bottom = NULL;
-			playingBoard[i].bottom = NULL;
-		}
-		if (!topNull && !leftNull) {
+		if (top && left) {
 			realBoard[i].topLeft = &(realBoard[i - width - 1]);
 			playingBoard[i].topLeft = &(playingBoard[i - width - 1]);
 		}
-		else {
-			realBoard[i].topLeft = NULL;
-			playingBoard[i].topLeft = NULL;
-		}
-		if (!topNull && !rightNull) {
+		if (top && right) {
 			realBoard[i].topRight = &(realBoard[i - width + 1]);
 			playingBoard[i].topRight = &(playingBoard[i - width + 1]);
 		}
-		else {
-			realBoard[i].topRight = NULL;
-			playingBoard[i].topRight = NULL;
-		}
-		if (!bottomNull && !leftNull) {
+		if (bottom && left) {
 			realBoard[i].bottomLeft = &(realBoard[i + width - 1]);
 			playingBoard[i].bottomLeft = &(playingBoard[i + width - 1]);
 		}
-		else {
-			realBoard[i].bottomLeft = NULL;
-			playingBoard[i].bottomLeft = NULL;
-		}
-		if (!bottomNull && !rightNull) {
+		if (bottom && right) {
 			realBoard[i].bottomRight = &(realBoard[i + width + 1]);
 			playingBoard[i].bottomRight = &(playingBoard[i + width + 1]);
-		}
-		else {
-			realBoard[i].bottomRight = NULL;
-			playingBoard[i].bottomRight = NULL;
 		}
 	}
 }
@@ -207,12 +194,17 @@ void move(int x, int y, int width, int *cleared, struct node *realBoard, struct 
 }
 
 int main() {
-    int width;
-    int height;
-    printf("How many squares wide should the board be?\n");
-    scanf("%d", &width);
-    printf("How many squares tall should the board be?\n");
-    scanf("%d", &height);
+    int width = 0;
+    int height = 0;
+
+	while (width < 1 || height < 1 || width * height == 1) {
+		printf("Enter the dimensions of the board. The board must be larger than 1 block.\n");
+		printf("How many squares wide should the board be?\n");
+		scanf("%d", &width);
+		printf("How many squares tall should the board be?\n");
+		scanf("%d", &height);
+		printf("\n");
+	}
 
 	int totalBlocks = width * height;
     int maxBombs = 1 > ((width - 1) * (height - 1)) ? 1 : ((width - 1) * (height - 1));
