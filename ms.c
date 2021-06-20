@@ -1,11 +1,7 @@
-// TODO: Add flag system
-
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
 #include <stdbool.h>
-
-#define LEN(ARR) (sizeof(ARR) / sizeof(ARR[0]))
 
 struct node {
 	char val;
@@ -177,77 +173,36 @@ char surroundingBombs(int x, int y, int width, struct node *realBoard) {
 }
 
 void move(int x, int y, int width, int *cleared, struct node *realBoard, struct node *playingBoard) {
-	playingBoard[x + y * width].val = surroundingBombs(x, y, width, realBoard);
-	(*cleared) ++;
+	if (playingBoard[x + y * width].val == 'U') {
+		playingBoard[x + y * width].val = surroundingBombs(x, y, width, realBoard);
+		(*cleared) ++;
 
-	if (playingBoard[x + y * width].val == '0') {
-		if (playingBoard[x + y * width].top && playingBoard[x + y * width].top->val == 'U') {
-			move(x, y - 1, width, cleared, realBoard, playingBoard);
-		}
-		if (playingBoard[x + y * width].topLeft && playingBoard[x + y * width].topLeft->val == 'U') {
-			move(x - 1, y - 1, width, cleared, realBoard, playingBoard);
-		}
-		if (playingBoard[x + y * width].topRight && playingBoard[x + y * width].topRight->val == 'U') {
-			move(x + 1, y - 1, width, cleared, realBoard, playingBoard);
-		}
-		if (playingBoard[x + y * width].left && playingBoard[x + y * width].left->val == 'U') {
-			move(x - 1, y, width, cleared, realBoard, playingBoard);
-		}
-		if (playingBoard[x + y * width].right && playingBoard[x + y * width].right->val == 'U') {
-			move(x + 1, y, width, cleared, realBoard, playingBoard);
-		}
-		if (playingBoard[x + y * width].bottom && playingBoard[x + y * width].bottom->val == 'U') {
-			move(x, y + 1, width, cleared, realBoard, playingBoard);
-		}
-		if (playingBoard[x + y * width].bottomLeft && playingBoard[x + y * width].bottomLeft->val == 'U') {
-			move(x - 1, y + 1, width, cleared, realBoard, playingBoard);
-		}
-		if (playingBoard[x + y * width].bottomRight && playingBoard[x + y * width].bottomRight->val == 'U') {
-			move(x + 1, y + 1, width, cleared, realBoard, playingBoard);
-		}
-	}
-}
-
-void play(int width, int height, int bombs, struct node *realBoard, struct node *playingBoard) {
-	int state = 0; // 0 = playing, 1 = won, 2 = lost
-	int totalClear = width * height - bombs;
-	int cleared = 0;
-	int x;
-	int y;
-
-	while (state == 0) {
-		printBoard(width, height, playingBoard);
-		bool set = false;
-
-		while (set == false) {
-			printf("Where would you like to move? (x, y): ");
-			scanf("%d, %d", &x, &y);
-
-			if (x < width && y < height && x >= 0 && y >= 0 && playingBoard[x + y * width].val == 'U') {
-				set = true;
+		if (playingBoard[x + y * width].val == '0') {
+			if (playingBoard[x + y * width].top) {
+				move(x, y - 1, width, cleared, realBoard, playingBoard);
+			}
+			if (playingBoard[x + y * width].topLeft) {
+				move(x - 1, y - 1, width, cleared, realBoard, playingBoard);
+			}
+			if (playingBoard[x + y * width].topRight) {
+				move(x + 1, y - 1, width, cleared, realBoard, playingBoard);
+			}
+			if (playingBoard[x + y * width].left) {
+				move(x - 1, y, width, cleared, realBoard, playingBoard);
+			}
+			if (playingBoard[x + y * width].right) {
+				move(x + 1, y, width, cleared, realBoard, playingBoard);
+			}
+			if (playingBoard[x + y * width].bottom) {
+				move(x, y + 1, width, cleared, realBoard, playingBoard);
+			}
+			if (playingBoard[x + y * width].bottomLeft) {
+				move(x - 1, y + 1, width, cleared, realBoard, playingBoard);
+			}
+			if (playingBoard[x + y * width].bottomRight) {
+				move(x + 1, y + 1, width, cleared, realBoard, playingBoard);
 			}
 		}
-
-		if (realBoard[x + y * width].val == 'B') {
-			playingBoard[x + y * width].val = 'B';
-			state = 2;
-		}
-		else {
-			move(x, y, width, &cleared, realBoard, playingBoard);
-		}
-
-		if (cleared == totalClear) {
-			state = 1;
-		}
-	}
-
-	printBoard(width, height, playingBoard);
-	printBoard(width, height, realBoard);
-	if (state == 1) {
-		printf("YOU WON!\n");
-	}
-	else {
-		printf("YOU LOST!\n");
 	}
 }
 
@@ -270,5 +225,57 @@ int main() {
 	setup(width, height, realBoard, playingBoard);
 	placeBombs(width, height, bombs, realBoard);
 	connectNodes(width, height, realBoard, playingBoard);
-	play(width, height, bombs, realBoard, playingBoard);
+	
+	int state = 0; // 0 = playing, 1 = won, 2 = lost
+	int totalClear = width * height - bombs;
+	int cleared = 0;
+	int x;
+	int y;
+	int flag; // true places/removes a flag, false clears the block
+
+	while (state == 0) {
+		printBoard(width, height, playingBoard);
+		bool set = false;
+
+		while (set == false) {
+			printf("Where would you like to move? (x, y): ");
+			scanf("%d, %d", &x, &y);
+
+			if (x < width && y < height && x >= 0 && y >= 0 && (playingBoard[x + y * width].val == 'U' || playingBoard[x + y * width].val == 'F')) {
+				set = true;
+			}
+		}
+
+		printf("Would you like to place/remove a flag? (0 for no, 1 for yes): ");
+		scanf("%d", &flag);
+
+		if (flag) {
+			if (playingBoard[x + y * width].val == 'U') {
+				playingBoard[x + y * width].val = 'F';
+			}
+			else {
+				playingBoard[x + y * width].val = 'U';
+			}
+		}
+		else if (realBoard[x + y * width].val == 'B') {
+			playingBoard[x + y * width].val = 'B';
+			state = 2;
+		}
+		else {
+			move(x, y, width, &cleared, realBoard, playingBoard);
+		}
+
+		if (cleared == totalClear) {
+			state = 1;
+		}
+	}
+
+	printBoard(width, height, playingBoard);
+	printBoard(width, height, realBoard);
+	if (state == 1) {
+		printf("YOU WON!\n");
+	}
+	else {
+		printf("YOU LOST!\n");
+	}
 }
