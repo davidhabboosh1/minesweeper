@@ -1,5 +1,4 @@
 // TODO: Add flag system
-// TODO: Add clearing multiple blocks at once
 
 #include <stdio.h>
 #include <time.h>
@@ -43,7 +42,7 @@ void placeBombs(int width, int height, int bombs, struct node *realBoard) {
 	}
 }
 
-void connectNodes(int width, int height, struct node *realBoard) {
+void connectNodes(int width, int height, struct node *realBoard, struct node *playingBoard) {
 	bool topNull;
 	bool leftNull;
 	bool rightNull;
@@ -70,51 +69,67 @@ void connectNodes(int width, int height, struct node *realBoard) {
 
 		if (!topNull) {
 			realBoard[i].top = &(realBoard[i - width]);
+			playingBoard[i].top = &(playingBoard[i - width]);
 		}
 		else {
 			realBoard[i].top = NULL;
+			playingBoard[i].top = NULL;
 		}
 		if (!leftNull) {
 			realBoard[i].left = &(realBoard[i - 1]);
+			playingBoard[i].left = &(playingBoard[i - 1]);
 		}
 		else {
 			realBoard[i].left = NULL;
+			playingBoard[i].left = NULL;
 		}
 		if (!rightNull) {
 			realBoard[i].right = &(realBoard[i + 1]);
+			playingBoard[i].right = &(playingBoard[i + 1]);
 		}
 		else {
 			realBoard[i].right = NULL;
+			playingBoard[i].right = NULL;
 		}
 		if (!bottomNull) {
 			realBoard[i].bottom = &(realBoard[i + width]);
+			playingBoard[i].bottom = &(playingBoard[i + width]);
 		}
 		else {
 			realBoard[i].bottom = NULL;
+			playingBoard[i].bottom = NULL;
 		}
 		if (!topNull && !leftNull) {
 			realBoard[i].topLeft = &(realBoard[i - width - 1]);
+			playingBoard[i].topLeft = &(playingBoard[i - width - 1]);
 		}
 		else {
 			realBoard[i].topLeft = NULL;
+			playingBoard[i].topLeft = NULL;
 		}
 		if (!topNull && !rightNull) {
 			realBoard[i].topRight = &(realBoard[i - width + 1]);
+			playingBoard[i].topRight = &(playingBoard[i - width + 1]);
 		}
 		else {
 			realBoard[i].topRight = NULL;
+			playingBoard[i].topRight = NULL;
 		}
 		if (!bottomNull && !leftNull) {
 			realBoard[i].bottomLeft = &(realBoard[i + width - 1]);
+			playingBoard[i].bottomLeft = &(playingBoard[i + width - 1]);
 		}
 		else {
 			realBoard[i].bottomLeft = NULL;
+			playingBoard[i].bottomLeft = NULL;
 		}
 		if (!bottomNull && !rightNull) {
 			realBoard[i].bottomRight = &(realBoard[i + width + 1]);
+			playingBoard[i].bottomRight = &(playingBoard[i + width + 1]);
 		}
 		else {
 			realBoard[i].bottomRight = NULL;
+			playingBoard[i].bottomRight = NULL;
 		}
 	}
 }
@@ -129,7 +144,7 @@ void printBoard (int width, int height, struct node *playingBoard) {
 	printf("\n");
 }
 
-int surroundingBombs(int x, int y, int width, struct node *realBoard) {
+char surroundingBombs(int x, int y, int width, struct node *realBoard) {
 	int surrounding = 0;
 	struct node selected = realBoard[x + y * width];
 
@@ -158,7 +173,39 @@ int surroundingBombs(int x, int y, int width, struct node *realBoard) {
 		surrounding ++;
 	}
 
-	return surrounding;
+	return surrounding + '0';
+}
+
+void move(int x, int y, int width, int *cleared, struct node *realBoard, struct node *playingBoard) {
+	playingBoard[x + y * width].val = surroundingBombs(x, y, width, realBoard);
+	(*cleared) ++;
+
+	if (playingBoard[x + y * width].val == '0') {
+		if (playingBoard[x + y * width].top && playingBoard[x + y * width].top->val == 'U') {
+			move(x, y - 1, width, cleared, realBoard, playingBoard);
+		}
+		if (playingBoard[x + y * width].topLeft && playingBoard[x + y * width].topLeft->val == 'U') {
+			move(x - 1, y - 1, width, cleared, realBoard, playingBoard);
+		}
+		if (playingBoard[x + y * width].topRight && playingBoard[x + y * width].topRight->val == 'U') {
+			move(x + 1, y - 1, width, cleared, realBoard, playingBoard);
+		}
+		if (playingBoard[x + y * width].left && playingBoard[x + y * width].left->val == 'U') {
+			move(x - 1, y, width, cleared, realBoard, playingBoard);
+		}
+		if (playingBoard[x + y * width].right && playingBoard[x + y * width].right->val == 'U') {
+			move(x + 1, y, width, cleared, realBoard, playingBoard);
+		}
+		if (playingBoard[x + y * width].bottom && playingBoard[x + y * width].bottom->val == 'U') {
+			move(x, y + 1, width, cleared, realBoard, playingBoard);
+		}
+		if (playingBoard[x + y * width].bottomLeft && playingBoard[x + y * width].bottomLeft->val == 'U') {
+			move(x - 1, y + 1, width, cleared, realBoard, playingBoard);
+		}
+		if (playingBoard[x + y * width].bottomRight && playingBoard[x + y * width].bottomRight->val == 'U') {
+			move(x + 1, y + 1, width, cleared, realBoard, playingBoard);
+		}
+	}
 }
 
 void play(int width, int height, int bombs, struct node *realBoard, struct node *playingBoard) {
@@ -186,8 +233,7 @@ void play(int width, int height, int bombs, struct node *realBoard, struct node 
 			state = 2;
 		}
 		else {
-			playingBoard[x + y * width].val = '0' + surroundingBombs(x, y, width, realBoard);
-			cleared ++;
+			move(x, y, width, &cleared, realBoard, playingBoard);
 		}
 
 		if (cleared == totalClear) {
@@ -223,6 +269,6 @@ int main() {
 
 	setup(width, height, realBoard, playingBoard);
 	placeBombs(width, height, bombs, realBoard);
-	connectNodes(width, height, realBoard);
+	connectNodes(width, height, realBoard, playingBoard);
 	play(width, height, bombs, realBoard, playingBoard);
 }
