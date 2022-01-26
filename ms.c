@@ -194,8 +194,8 @@ void move(int x, int y, int width, int *cleared, struct node *realBoard, struct 
 }
 
 int main() {
-    int width = 0;
-    int height = 0;
+	int width = 0;
+	int height = 0;
 
 	while (width < 1 || height < 1 || width * height == 1) {
 		printf("Enter the dimensions of the board. The board must be larger than 1 block.\n");
@@ -207,11 +207,11 @@ int main() {
 	}
 
 	int totalBlocks = width * height;
-    int maxBombs = 1 > ((width - 1) * (height - 1)) ? 1 : ((width - 1) * (height - 1));
-    srand(time(NULL));
-    int bombs = rand() % maxBombs + 1;
+	int maxBombs = 1 > ((width - 1) * (height - 1)) ? 1 : ((width - 1) * (height - 1));
+	srand(time(NULL));
+	int bombs = rand() % maxBombs + 1;
 
-    struct node playingBoard[totalBlocks]; // Starts with all unflipped
+	struct node playingBoard[totalBlocks]; // Starts with all unflipped
 	struct node realBoard[totalBlocks]; // Starts with all clear
 
 	setup(width, height, realBoard, playingBoard);
